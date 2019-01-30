@@ -4,9 +4,23 @@ Created on Wed Jan 30 16:07:49 2019
 
 @author: 
 """
-# get the sum and average of the first 10 numbers 
+# 1) Tradition
+print ('Hello World!')
+
+
+# 2) data types in python are dynamically evaluated.
+a = 500
+type(a)     # int
+a = a  /9
+type(a)     # float
+a = 'Hello'
+
+
+
+
+# 3) get the sum and average of the first 10 numbers 
 # first try
-print ('First try getting sum & avg')
+#print ('First try getting sum & avg')
 i = 1           # start at 0
 total = i       # variable to keep running total
 while i < 10:
@@ -18,8 +32,8 @@ print ('total is   ', total)
 print ('average is ', total / i)
 
 
+# 4) second try -- use a List
 import numpy as np
-# second try -- use a List
 print ('==================================================')
 print ('Second try getting sum & avg')
 # create a list of the 10 numbers
@@ -29,3 +43,5 @@ total = sum(myList)
 avg = np.average (myList)
 
 print ('Total  ', total, '\nAverage', avg)
+
+

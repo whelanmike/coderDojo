@@ -18,10 +18,14 @@ print ('total is   ', total)
 print ('average is ', total / i)
 
 
-
+import numpy as np
 # second try -- use a List
 print ('==================================================')
 print ('Second try getting sum & avg')
 # create a list of the 10 numbers
 myList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 print ('myList contains these elements :- ',  myList )
+total = sum(myList)
+avg = np.average (myList)
+
+print ('Total  ', total, '\nAverage', avg)

@@ -39,107 +39,41 @@ void setup() {
 }
 
 void loop(){
-//if (Serial.available()>0){
-//Serial.write(mySerial.read());
-//}
-if (mySerial.available()>0){
-  c = mySerial.read();
-  Serial.write(c);
-}
+  if (mySerial.available()>0){
+    c = mySerial.read();
+    Serial.write(c);
+  }
   if (c == 'X'){
     PowerOn();
     }
   if (c == 'Y'){
-//    Serial.println ("------------> powering OFF now.......  : ");
     PowerOff();
     }
 
   if (c == 'F' && dirn != 'F' && dirn != 'R'){
-//    Serial.println ("------------> the start bit : ");
     time_now = millis();
     stepper = 0;
     voltage = 0;
     dirn = 'F';
+    analogWrite (RPWM_output, 0);
     }
   if (c == 'R' && dirn != 'R' && dirn != 'F'){
-//    Serial.println ("------------> the start bit : ");
     time_now = millis();
     stepper = 0;
     voltage = 0;
     dirn = 'R';
+    analogWrite (LPWM_output, 0);
     }
     
   elapsed = millis() - time_now;
-// Forward Direction  
-  if (dirn == 'F' && elapsed < duration){
-    analogWrite (RPWM_output, 0);
-    analogWrite (LPWM_output, voltage);
-//    Serial.println (String("------------------> Speeding up.  V : ") + voltage );
-//    Serial.print("Elapsed time: ");
-//    Serial.println(elapsed);
-    if (stepper <= 2000){
-      voltage += 1;
-      if ( voltage > 254 ){
-        voltage = 255;
-      }
-      
-      stepper += 1;
-//      Serial.println (String("direction Init: ") + dirn );
-    }
-//   Serial.println (String("Stepper : ") + stepper );
-//   Serial.println (String("direction : ") + dirn );
-
-  }
-  if (dirn == 'F' && millis() - time_now >= duration){
-    voltage -= 1;
-//    Serial.println (String("------------------> Slowing down. V : ") + voltage );
-    analogWrite (LPWM_output, voltage);
-    if ( stepper > 0 ){
-      stepper -= 1;
-      voltage -= 1;
-      if ( voltage < 0){
-        stepper = 0;
-      }
-      
-//      Serial.println (String("direction  slow: ") + dirn );
-      }
-     if (stepper <= 0){
-//      Serial.println (String("Finished : ") + dirn );
-      dirn = 'A';
-     }
-  }
-// End Forward direction.
-//  -- Reverse direction ..
-  if (dirn == 'R' && elapsed < duration){
-    analogWrite (LPWM_output, 0);
-    analogWrite (RPWM_output, voltage);
-    if (stepper <= 2000){
-      voltage += 1;
-      if ( voltage > 254 ){
-        voltage = 255;
-      }
-      
-      stepper += 1;
-    }
-
-  }
-  if (dirn == 'R' && millis() - time_now >= duration){
-    voltage -= 1;
-    analogWrite (RPWM_output, voltage);
-    if ( stepper > 0 ){
-      stepper -= 1;
-      voltage -= 1;
-      if ( voltage < 0){
-        stepper = 0;
-      }
-
-    }
-     if (stepper <= 0){
-      dirn = 'A';
-     }
+  
+  if (dirn == 'F'){     // Forward Direction  
+    startMotor ('F', LPWM_output);
   }
 
-// End Reverse direction
+  if (dirn == 'R' ){    //  -- Reverse direction ..
+    startMotor ('R', RPWM_output);
+  }
 }
  
 void PowerOn(){
@@ -151,4 +85,29 @@ void PowerOff(){
   digitalWrite(RELAY_3, HIGH);
   digitalWrite(RELAY_4, HIGH);
 }
-
+void startMotor (char dirn, int PWM_dirn){
+  if (elapsed < duration){
+    analogWrite (PWM_dirn, voltage);
+    if (stepper <= 2000){
+      voltage += 1;
+      if ( voltage > 254 ){
+        voltage = 255;
+      }
+      stepper += 1;
+    }
+  }
+  if (millis() - time_now >= duration){
+    voltage -= 1;
+    analogWrite (PWM_dirn, voltage);
+    if ( stepper > 0 ){
+      stepper -= 1;
+      voltage -= 1;
+      if ( voltage < 0){
+        stepper = 0;
+      }
+    }
+    if (stepper <= 0){
+      dirn = 'A';   // Flag Stopped.
+    }
+  }
+}

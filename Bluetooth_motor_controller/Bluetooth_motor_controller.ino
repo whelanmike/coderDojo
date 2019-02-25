@@ -1,8 +1,6 @@
 #include <SoftwareSerial.h>
 SoftwareSerial bluetoothSerial(8, 9); // Tx, Rx
 
-//int RELAY_1 = 7; //Declaring the pins where in1 in2 from the driver are wired
-//int RELAY_2 = 3;
 int RELAY_3 = 2;
 int RELAY_4 = 4;
 int RPWM_output = 5;
@@ -12,6 +10,8 @@ int duration = 7000;
 unsigned long time_start = 0;
 int voltage = 0;
 unsigned long elapsed = 0;
+unsigned long powerOnMillis = 0;
+int powerOnDuation = 30000;
 char dirn = 'A';
 char c = ' ';
 
@@ -59,11 +59,16 @@ void loop(){
   if (dirn == 'R' ){    //  -- Reverse direction ..
     startMotor ('R', RPWM_output);
   }
+
+  if ((unsigned long)( millis() - powerOnMillis) >= powerOnDuation ) { // Turn off after 30 sec.
+      PowerOff();
+   }
 }
 
 void PowerOn(){
   digitalWrite(RELAY_3, LOW);
   digitalWrite(RELAY_4, LOW);
+  powerOnMillis = 0;
 }
 
 void PowerOff(){

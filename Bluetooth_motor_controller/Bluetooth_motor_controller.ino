@@ -11,12 +11,12 @@ unsigned long time_start = 0;
 int voltage = 0;
 unsigned long elapsed = 0;
 unsigned long powerOnMillis = 0;
-int powerOnDuation = 30000;
+int powerOnDuation = 30000;  // power off after 30 sec
 char dirn = 'A';
 char c = ' ';
 
 void setup() {
-  Serial.begin(115200);
+//  Serial.begin(115200);
   pinMode(RELAY_3, OUTPUT);
   pinMode(RELAY_4, OUTPUT);
   pinMode(RPWM_output, OUTPUT);
@@ -25,14 +25,14 @@ void setup() {
   digitalWrite(13, LOW);
   digitalWrite(RELAY_3, HIGH);  // OFF
   digitalWrite(RELAY_4, HIGH);  // OFF
-  bluetoothSerial.begin(115200);
+  bluetoothSerial.begin(9600);
   delay(100);
 }
 
 void loop(){
   if (bluetoothSerial.available()>0){
     c = bluetoothSerial.read();
-    Serial.write(c);
+//    Serial.write(c);
   }
   if (c == 'X'){
     PowerOn();
@@ -42,25 +42,25 @@ void loop(){
     }
 
   if (c == 'F' && dirn != 'F' && dirn != 'R'){
-    initVars();
+    initVars( c );
     analogWrite (RPWM_output, 0);
     }
   if (c == 'R' && dirn != 'R' && dirn != 'F'){
-    initVars();
+    initVars( c );
     analogWrite (LPWM_output, 0);
-    }
+  }
 
   elapsed = millis() - time_start;
 
   if (dirn == 'F'){     // Forward Direction
-    startMotor ('F', LPWM_output);
+    startMotor (LPWM_output);
   }
 
-  if (dirn == 'R' ){    //  -- Reverse direction ..
-    startMotor ('R', RPWM_output);
+  if (dirn == 'R' ){    // Reverse direction ..
+    startMotor (RPWM_output);
   }
 
-  if ((unsigned long)( millis() - powerOnMillis) >= powerOnDuation ) { // Turn off after 30 sec.
+  if ((unsigned long)( millis() - powerOnMillis) >= powerOnDuation ) { // Turn off after n sec.
       PowerOff();
    }
 }
@@ -68,32 +68,33 @@ void loop(){
 void PowerOn(){
   digitalWrite(RELAY_3, LOW);
   digitalWrite(RELAY_4, LOW);
-  powerOnMillis = 0;
+  powerOnMillis = millis();
 }
 
 void PowerOff(){
   digitalWrite(RELAY_3, HIGH);
   digitalWrite(RELAY_4, HIGH);
 }
-void initVars(){
+void initVars(char x){
   time_start = millis();
   voltage = 0;
-  dirn = c;
+  dirn = x;
 }
-void startMotor (char dirn, int PWM_dirn){
+
+void startMotor(int PWM_dirn){
   if (elapsed < duration){
     analogWrite (PWM_dirn, voltage);
-      voltage += 1;
-      if ( voltage > 254 ){
-        voltage = 255;
-      }
+    voltage += 1;
+    if ( voltage > 254 ){
+      voltage = 255;
+    }
   }
   if (elapsed >= duration){
-    voltage -= 1;
     analogWrite (PWM_dirn, voltage);
-      voltage -= 1;
-      if ( voltage <= 0){
-        dirn = 'A'; // Flag STOP
-      }
+    voltage -= 1;
+    if ( voltage <= 0){
+      voltage = 0;
+      dirn = 'A'; // Flag STOP# 
+    }
   }
 }

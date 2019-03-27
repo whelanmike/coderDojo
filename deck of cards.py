@@ -5,15 +5,7 @@ Created on Wed Feb 13 10:58:26 2019
 @author: mike.whelan
 """
 import random
-
-def display_card(rank, suit):
-    print('┌───────┐')
-    print('| {:<2}    |'.format(rank))
-    print('|       |')
-    print('|   {}   |'.format((suit)))
-    print('|       |')
-    print('|    {:>2} |'.format(rank))
-    print('└───────┘') 
+import display_cards as dc
 
 
 suits = ['♥', '♦', '♠', '♣']       #
@@ -22,10 +14,8 @@ rank.extend ( ['J','Q','K','A'] )  # Note extend NOT append
 #print (rank)
 
 deck = [(r, s)  for r in rank for s in suits]
-#print (len(deck))
 
 random.shuffle (deck)
-for card in deck[:5]:
-    r, s = card
-    print ( r, s )
-#    display_card(r, s)
+
+card1, card2, card3, card4, card5 = deck[:5]
+dc.display_side_by_side( card1, card2, card3, card4, card5  )

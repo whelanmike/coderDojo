@@ -1,6 +1,13 @@
-#include <DS3232RTC.h>
+#include <DS3232RTC.h>      // https://github.com/JChristensen/DS3232RTC
+#include <Streaming.h>      // http://arduiniana.org/libraries/streaming/
 #include <SPI.h>
 #include <SD.h>
+
+// Connect RTC SDA to Arduino pin A4.		DONE
+// Connect RTC SCL to Arduino pin A5.		DONE
+// Connect RTC INT/SQW to Arduino pin 2.
+
+const uint8_t SQW_PIN(2);   // connect this pin to DS3231 INT/SQW pin
 
 const int chipSelect = 6;
 char charFileName[16] = "";
@@ -29,6 +36,19 @@ void setup()
     while (1);
   }
   Serial.println("initialization done.");
+	    
+		RTC.setAlarm(ALM1_MATCH_DATE, 0, 0, 0, 1);
+		RTC.alarm(ALARM_1);
+		RTC.alarmInterrupt(ALARM_1, false);
+		RTC.squareWave(SQWAVE_NONE);
+		// configure an interrupt on the falling edge from the SQW pin
+		pinMode(SQW_PIN, INPUT_PULLUP);
+		attachInterrupt(INT0, alarmIsr, FALLING);
+
+		// set alarm 1 for 20 seconds after every minute
+		RTC.setAlarm(ALM1_EVERY_MINUTE, 0, 0, 0, 5);  // every 5 mins
+		RTC.alarm(ALARM_1);                   // ensure RTC interrupt flag is cleared
+		RTC.alarmInterrupt(ALARM_1, true)
 }
 
 void loop()

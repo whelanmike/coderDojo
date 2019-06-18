@@ -14,7 +14,7 @@ File logFile;
 float temperature_reading;
 String temperature_str;
 String logTime;
-const int time_interval = 5;// Sets the wakeup intervall in minutes
+const int time_interval = 2;// Sets the wakeup intervall in minutes
 
 void setup()
 {
@@ -61,7 +61,7 @@ void setup()
 
 void loop()
 {
-    displayTime();     // Prints the time to serial monitor.=
+//    displayTime();     // Prints the time to serial monitor.=
     fileName = getFileName();
 //    tempVar = fileName;
     sprintf (charFileName, "%04d%02d%02d.log", year(), month(), day()); 

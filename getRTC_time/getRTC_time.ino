@@ -89,13 +89,15 @@ void loop()
 
 String displayTime()  // Function that prints the time to serial monitor.
 {
-    logTime = year();
+    time_t t;
+    t = RTC.get();
+    logTime = year(t);
     logTime+= "-";
-    logTime+= displayDigits(month(), '-')  + "-"
-    + displayDigits(day(), '-') + " " 
-    + displayDigits(hour(), ' ')  + ":"
-    + displayDigits(minute(), ':')  + ":"
-    + displayDigits(second(), ':');
+    logTime+= displayDigits(month(t), '-')  + "-"
+    + displayDigits(day(t), '-') + " " 
+    + displayDigits(hour(t), ' ')  + ":"
+    + displayDigits(minute(t), ':')  + ":"
+    + displayDigits(second(t), ':');
     return logTime;
 }
 

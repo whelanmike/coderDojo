@@ -14,7 +14,7 @@ File logFile;
 float temperature_reading;
 String temperature_str;
 String logTime;
-const int time_interval = 2;// Sets the wakeup intervall in minutes
+const int time_interval = 1; // Sets the wakeup intervall in minutes
 
 void setup()
 {
@@ -61,6 +61,8 @@ void setup()
 
 void loop()
 {
+    time_t t; //create a temporary time variable so we can set the time and read the time from the RTC
+  t=RTC.get();//Gets the current time of the RTC
 //    displayTime();     // Prints the time to serial monitor.=
     fileName = getFileName();
 //    tempVar = fileName;
@@ -85,7 +87,7 @@ void loop()
     Serial.println("error opening file :- " + fileName);
   }
     
-    delay(5000);       // 1 minute interval between prints.
+    delay(5000);       // 5 sec delay
     Going_To_Sleep();
 
 }

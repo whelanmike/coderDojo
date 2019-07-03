@@ -3,7 +3,7 @@
 #include <SPI.h>
 #include <SD.h>
 
-#define interruptPin 2 //Pin we are going to use to wake up the Arduino
+#define interruptPin 2 //Pin we are going to use to wake up the Arduino  interrupt pin (D2)
 
 const int chipSelect = 6;
 char charFileName[16] = "";
@@ -26,66 +26,61 @@ void setup()
     else
         Serial.println("System Time is Set.");      
 
-  Serial.print("Initializing SD card...");
+    Serial.print("Initializing SD card...");
 
   // see if the card is present and can be initialized:
-  if (!SD.begin(chipSelect)) {
-    Serial.println("initialization failed!");
-    while (1);
+    if (!SD.begin(chipSelect)) {
+        Serial.println("initialization failed!");
+        while (1);
   }
-  Serial.println("initialization done.");
+    Serial.println("initialization done.");
 
-  pinMode(LED_BUILTIN,OUTPUT);//We use the led on pin 13 to indecate when Arduino is A sleep
-  pinMode(interruptPin,INPUT_PULLUP);//Set pin d2 to input using the buildin pullup resistor
-  digitalWrite(LED_BUILTIN,HIGH);//turning LED on
+    pinMode(LED_BUILTIN,OUTPUT);//We use the led on pin 13 to indecate when Arduino is A sleep
+    pinMode(interruptPin,INPUT_PULLUP);//Set pin d2 to input using the buildin pullup resistor
+    digitalWrite(LED_BUILTIN,HIGH);//turning LED on
 
-  RTC.setAlarm(ALM1_MATCH_DATE, 0, 0, 0, 1);
-  RTC.setAlarm(ALM2_MATCH_DATE, 0, 0, 0, 1);
-  RTC.alarm(ALARM_1);
-  RTC.alarm(ALARM_2);
-  RTC.alarmInterrupt(ALARM_1, false);
-  RTC.alarmInterrupt(ALARM_2, false);
-  RTC.squareWave(SQWAVE_NONE);
+    RTC.setAlarm(ALM1_MATCH_DATE, 0, 0, 0, 1);
+    RTC.setAlarm(ALM2_MATCH_DATE, 0, 0, 0, 1);
+    RTC.alarm(ALARM_1);
+    RTC.alarm(ALARM_2);
+    RTC.alarmInterrupt(ALARM_1, false);
+    RTC.alarmInterrupt(ALARM_2, false);
+    RTC.squareWave(SQWAVE_NONE);
   
-  time_t t; //create a temporary time variable so we can set the time and read the time from the RTC
-  t=RTC.get();//Gets the current time of the RTC
-  RTC.setAlarm(ALM1_MATCH_MINUTES , 0, minute(t)+time_interval, 0, 0);// Setting alarm 1 to go off 5 minutes from now
-  // clear the alarm flag
-  RTC.alarm(ALARM_1);
-  // configure the INT/SQW pin for "interrupt" operation (disable square wave output)
-  RTC.squareWave(SQWAVE_NONE);
-  // enable interrupt output for Alarm 1
-  RTC.alarmInterrupt(ALARM_1, true);
+    time_t t;   //create a temporary time variable so we can set the time and read the time from the RTC
+    t=RTC.get();//Gets the current time of the RTC
+    RTC.setAlarm(ALM1_MATCH_MINUTES , 0, minute(t)+time_interval, 0, 0);// Setting alarm 1 to go off 5 minutes from now
+    // clear the alarm flag
+    RTC.alarm(ALARM_1);
+    // configure the INT/SQW pin for "interrupt" operation (disable square wave output)
+    RTC.squareWave(SQWAVE_NONE);
+    // enable interrupt output for Alarm 1
+    RTC.alarmInterrupt(ALARM_1, true);
 
 }
 
 void loop()
 {
     time_t t; //create a temporary time variable so we can set the time and read the time from the RTC
-  t=RTC.get();//Gets the current time of the RTC
+    t = RTC.get();//Gets the current time of the RTC
 //    displayTime();     // Prints the time to serial monitor.=
     fileName = getFileName();
-//    tempVar = fileName;
     sprintf (charFileName, "%04d%02d%02d.log", year(), month(), day()); 
-//    Serial.print ("----------- filename --->  ");
-//    Serial.println( charFileName );
     temperature_reading = RTC.temperature() / 4.;
     temperature_str = F(",");
     temperature_str += String (temperature_reading, 4);
     logString = (displayTime());
     logString += temperature_str;
-//    Serial.println (temperature_str);
-//    Serial.println (displayTime());
     logFile = SD.open(charFileName, FILE_WRITE);
     if ( logFile ){
       logFile.println (logString);
       Serial.println (logString);
       logFile.close();
     }
-  // if the file isn't open, pop up an error:
-  else {
-    Serial.println("error opening file :- " + fileName);
-  }
+    // if the file isn't open, pop up an error:
+    else {
+        Serial.println("error opening file :- " + fileName);
+    }
     
     delay(5000);       // 5 sec delay
     Going_To_Sleep();
@@ -101,11 +96,7 @@ String displayTime()  // Function that prints the time to serial monitor.
     + displayDigits(hour(), ' ')  + ":"
     + displayDigits(minute(), ':')  + ":"
     + displayDigits(second(), ':');
-//    Serial.println(); 
-
-//    float c = RTC.temperature() / 4.;
-//    Serial.println( c );
-  return logTime;
+    return logTime;
 }
 
 String displayDigits(int digits, char delim)    // Function that prints preceding colon and leading 0.
@@ -137,9 +128,6 @@ String getFileName()  // Function get  filename for today.
       filename += "-";
     }
     filename +=  String( day() ) ; //+ ".log"; 
-//    Serial.println (hour());
-//    Serial.println (minute());
-//    Serial.println (second());
     return filename;
 }
 
@@ -155,19 +143,18 @@ void Going_To_Sleep(){
     sleep_cpu();//activating sleep mode
     Serial.println("just woke up!");//next line of code executed after the interrupt 
     digitalWrite(LED_BUILTIN,HIGH);//turning LED on
-//    temp_Humi();//function that reads the temp and the humidity
+
     t=RTC.get();
     Serial.println("WakeUp Time: "+String(hour(t))+":"+String(minute(t))+":"+String(second(t)));//Prints time stamp 
     //Set New Alarm
     RTC.setAlarm(ALM1_MATCH_MINUTES , 0, minute(t)+time_interval, 0, 0);
   
-  // clear the alarm flag
-  RTC.alarm(ALARM_1);
+    // clear the alarm flag
+    RTC.alarm(ALARM_1);
   }
 
 void wakeUp(){
-  Serial.println("Interrrupt Fired");//Print message to serial monitor
-   sleep_disable();//Disable sleep mode
-  detachInterrupt(0); //Removes the interrupt from pin 2;
- 
+    Serial.println("Interrrupt Fired");//Print message to serial monitor
+    sleep_disable();//Disable sleep mode
+    detachInterrupt(0); //Removes the interrupt from pin 2;
 }

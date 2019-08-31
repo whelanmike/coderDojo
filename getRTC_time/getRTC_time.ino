@@ -5,16 +5,28 @@
 
 #define interruptPin 2 //Pin we are going to use to wake up the Arduino  interrupt pin (D2)
 
-const int sd_chipSelect = 6;
-char charFileName[16] = "";
-String logString = "";
-String tempVar;
-File logFile;
-float temperature_reading = 0.0;
-char temperature_str[10];
-String logTime;
-const int time_interval = 1; // Sets the wakeup intervall in minutes
-int Year, Month, Day, Hour, Minute, Second;
+const int sd_chipSelect      = 6;
+char      charFileName[16]   = "";
+String    logString          = "";
+File      logFile;
+float     temperature_float  = 0.0;
+char      temperature_char[10];
+String    logTime;
+const int sleep_for_mins     = 1; // Sets the wakeup intervall in minutes
+int       Year, Month, Day, Hour, Minute, Second;  // Function to update these values.
+
+boolean   isPumping          = 0;
+const int repeatCheckMinutes = 1;
+long      currentTime        = 0;
+long      lastCheckTime      = 0 ;
+int       sleepTimeMinutes   = 15;
+int       currentPressure    = 0;
+int       previousPressure   = 0;
+const int pressureLow        = 100;
+const int pressureHigh       = 200;
+int       batteryVoltage;
+int       panelVoltage;
+const int relayPin           = 0; //D3
 
 void setup()
 {
@@ -40,23 +52,15 @@ void setup()
   digitalWrite(LED_BUILTIN, HIGH);      //turning LED on
 
   RTC.setAlarm(ALM1_MATCH_DATE, 0, 0, 0, 1);
-  RTC.setAlarm(ALM2_MATCH_DATE, 0, 0, 0, 1);
   RTC.alarm(ALARM_1);
-  RTC.alarm(ALARM_2);
   RTC.alarmInterrupt(ALARM_1, false);
-  RTC.alarmInterrupt(ALARM_2, false);
-  RTC.squareWave(SQWAVE_NONE);
+  RTC.squareWave(SQWAVE_NONE);  // configure the INT/SQW pin for "interrupt" operation (disable square wave output)
 
   time_t t;   //create a temporary time variable so we can set the time and read the time from the RTC
   t = RTC.get(); //Gets the current time of the RTC
-  RTC.setAlarm(ALM1_MATCH_MINUTES , 0, minute(t) + time_interval, 0, 0); // Setting alarm 1 to go off 5 minutes from now
-  // clear the alarm flag
-  RTC.alarm(ALARM_1);
-  // configure the INT/SQW pin for "interrupt" operation (disable square wave output)
-  RTC.squareWave(SQWAVE_NONE);
-  // enable interrupt output for Alarm 1
-  RTC.alarmInterrupt(ALARM_1, true);
-
+  RTC.setAlarm(ALM1_MATCH_MINUTES , 0, minute(t) + sleep_for_mins, 0, 0); // Setting alarm 1 to go off 5 minutes from now
+  RTC.alarm(ALARM_1);   // clear the alarm flag
+  RTC.alarmInterrupt(ALARM_1, true);    // enable interrupt output for Alarm 1
 }
 
 void loop()
@@ -64,10 +68,10 @@ void loop()
   updateTime();
   sprintf (charFileName, "%04d%02d%02d.log", Year, Month, Day);
   Serial.print (String (charFileName)); Serial.println( " <------------------------->");
-  temperature_reading = RTC.temperature() / 4.0;
-  dtostrf (temperature_reading, 4, 2, temperature_str);  // https://stackoverflow.com/questions/27651012/arduino-sprintf-float-not-formatting
+  temperature_float = RTC.temperature() / 4.0;
+  dtostrf (temperature_float, 4, 2, temperature_char);  // https://stackoverflow.com/questions/27651012/arduino-sprintf-float-not-formatting
   logString = (displayTime()) +"|";
-  logString += String(temperature_str);
+  logString += String(temperature_char);
   logFile = SD.open(charFileName, FILE_WRITE);   // This has to be a character array.
   if ( logFile ) {
     logFile.println (logString);
@@ -87,8 +91,8 @@ void loop()
 void updateTime()  // Function that prints the time to serial monitor.
 {
   time_t t;
-  t = RTC.get();  // go away and get the time.
-  Year = year(t);
+  t = RTC.get();  // Get the current time.
+  Year = year(t); // Update the following GLOBAL vars
   Month = month(t);
   Day = day(t);
   Hour = hour(t);
@@ -96,7 +100,7 @@ void updateTime()  // Function that prints the time to serial monitor.
   Second = second(t);
 }
 
-String displayTime(){
+String displayTime(){ // return timestamp (YYYY-MM-DD HH:MM:SS) as character array.
   char current_timestamp[120];
   sprintf(current_timestamp, "%4d-%02d-%02d %02d:%02d:%02d", Year, Month, Day, Hour, Minute, Second);
 //  Serial.print (current_timestamp);
@@ -119,9 +123,9 @@ void Going_To_Sleep() {
 
   t = RTC.get();
   Serial.println("WakeUp Time: " + String(hour(t)) + ":" + String(minute(t)) + ":" + String(second(t))); //Prints time stamp
-  //Set New Alarm
-  RTC.setAlarm(ALM1_MATCH_MINUTES , 0, minute(t) + time_interval, 0, 0);
 
+  //Set New Alarm
+  RTC.setAlarm(ALM1_MATCH_MINUTES , 0, minute(t) + sleep_for_mins, 0, 0);
   // clear the alarm flag
   RTC.alarm(ALARM_1);
 }

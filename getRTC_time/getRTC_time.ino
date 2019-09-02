@@ -23,9 +23,9 @@ unsigned long      lastCheckTime      = 0 ;
 unsigned int       sleepTimeMinutes   = 15;
 unsigned int       currentPressure    = 0;
 unsigned int       previousPressure   = 0;
-const unsigned int pressureLow        = 100;
+const unsigned int pressureLow        = 150;
 const unsigned int pressureHigh       = 200;
-const unsigned int pressureDelta      = 6;  // Indicates that tank is filling.
+const unsigned int pressureDelta      = 3;  // Indicates that tank is filling.
 unsigned int       batteryVoltage;
 unsigned int       panelVoltage;
 const unsigned int relayPin           = 0; //TBD
@@ -108,6 +108,7 @@ void loop()
             }
             else{
                 if ((currentPressure - previousPressure) < pressureDelta){ // Tank NOT filling.
+                    Serial.println ("Pressure delta too low. Tank not filling. Set isPumping OFF ");
                     setPumping (false);
                 }
                 else{
@@ -189,14 +190,6 @@ boolean aMinuteSinceLastReading (){
     }
 }
 
-// Mock pressure reading. Returns some High/Low pressure values.
-unsigned int readPressure(){
-    if (currentPressure > 300){currentPressure = 0;}
-    return currentPressure + 75;
-//    if (isPumping){
-//        return 2000;
-//    }
-//    else{
-//        return 20;
-//    }
+unsigned int readPressure(){ // Pressure Sensor on A0
+    return analogRead (A0);
 }

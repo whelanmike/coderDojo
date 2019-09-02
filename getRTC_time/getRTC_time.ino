@@ -93,8 +93,8 @@ void loop()
         else {
           Serial.println("error opening file :- " + String(charFileName));
         }
-        previousPressure = currentPressure;
-        lastCheckTime = millis();
+//        previousPressure = currentPressure;
+//        lastCheckTime = millis();
         
         delay(5000);       // 5 sec delay
         Going_To_Sleep();

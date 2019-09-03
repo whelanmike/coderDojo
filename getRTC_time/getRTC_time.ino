@@ -1,6 +1,5 @@
 #include <avr/sleep.h>//this AVR library contains the methods that controls the sleep modes
 #include <DS3232RTC.h>
-//#include <SPI.h>
 #include <SD.h>
 
 #define interruptPin 2 //Pin we are going to use to wake up the Arduino  interrupt pin (D2)
@@ -15,7 +14,6 @@ char               temperature_char[10];
 String             logTime;
 const byte         sleep_for_mins     = 1; // Sets the wakeup intervall in minutes
 unsigned int       Year, Month, Day, Hour, Minute, Second;  // Function to update these values.
-
 boolean            isPumping          = false;
 const unsigned int repeatCheckMinutes = 1;
 unsigned long      currentTime        = 0;

@@ -113,7 +113,6 @@ void loop()
                     previousPressure = currentPressure;
                 }
             }
-
         }
         else{                             // if a reading has been taken recently, do nothing.
             NOP;

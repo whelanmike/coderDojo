@@ -52,16 +52,16 @@ void setup()
     pinMode(LED_BUILTIN, OUTPUT);         //We use the led on pin 13 to indicate when Arduino is asleep
     pinMode(interruptPin, INPUT_PULLUP);  //Set pin d2 to input using the builtin pullup resistor
     digitalWrite(LED_BUILTIN, HIGH);      //turning LED on
-    
+
     //  RTC.setAlarm(ALM1_MATCH_DATE, 0, 0, 0, 1);
     RTC.alarm(ALARM_1);
     RTC.alarmInterrupt(ALARM_1, false);
-    RTC.squareWave(SQWAVE_NONE);  // configure the INT/SQW pin for "interrupt" operation (disable square wave output)
+    RTC.squareWave(SQWAVE_NONE);          // configure the INT/SQW pin for "interrupt" operation (disable square wave output)
     
-    time_t t;   //create a temporary time variable so we can set the time and read the time from the RTC
-    t = RTC.get(); //Gets the current time of the RTC
+    time_t t;                             //create a temporary time variable so we can set the time and read the time from the RTC
+    t = RTC.get();                        //Gets the current time of the RTC
     RTC.setAlarm(ALM1_MATCH_MINUTES , 0, minute(t) + sleep_for_mins, 0, 0); // Setting alarm 1 to go off 5 minutes from now
-    RTC.alarm(ALARM_1);   // clear the alarm flag
+    RTC.alarm(ALARM_1);                   // clear the alarm flag
     RTC.alarmInterrupt(ALARM_1, true);    // enable interrupt output for Alarm 1
 }
 
@@ -89,13 +89,11 @@ void loop()
           Serial.print (logString); Serial.println (" | log data  | ");
           logFile.close();
         }
-        // if the file isn't open, pop up an error:
-        else {
+        else {                            // if the file isn't open, pop up an error:
           Serial.println("error opening file :- " + String(charFileName));
         }
 //        previousPressure = currentPressure;
 //        lastCheckTime = millis();
-        
         delay(5000);       // 5 sec delay
         Going_To_Sleep();
       }
@@ -117,18 +115,19 @@ void loop()
             }
 
         }
-        else{
+        else{                             // if a reading has been taken recently, do nothing.
             NOP;
         }
     }
     lastCheckTime = millis();
 }
 
-void updateTime()  // Function that prints the time to serial monitor.
+/* END loop . Define functions after this */
+void updateTime()                         // Function that prints the time to serial monitor.
 {
     time_t t;
-    t = RTC.get();  // Get the current time.
-    Year = year(t); // Update the following GLOBAL vars
+    t = RTC.get();                        // Get the current time.
+    Year = year(t);                       // Update the following GLOBAL vars
     Month = month(t);
     Day = day(t);
     Hour = hour(t);
@@ -136,38 +135,37 @@ void updateTime()  // Function that prints the time to serial monitor.
     Second = second(t);
 }
 
-String displayTime(){ // return timestamp (YYYY-MM-DD HH:MM:SS) as character array.
+String displayTime(){                     // return timestamp (YYYY-MM-DD HH:MM:SS) as character array.
     char current_timestamp[20];
     sprintf(current_timestamp, "%4d-%02d-%02d %02d:%02d:%02d", Year, Month, Day, Hour, Minute, Second);
     return current_timestamp;
 }
 
 void Going_To_Sleep() {
-    sleep_enable();//Enabling sleep mode
-    attachInterrupt(0, wakeUp, LOW);//attaching a interrupt to pin d2
-    set_sleep_mode(SLEEP_MODE_PWR_DOWN);//Setting the sleep mode, in our case full sleep
-    digitalWrite(LED_BUILTIN, LOW); //turning LED off
-    time_t t;// creates temp time variable
-    t = RTC.get(); //gets current time from rtc
+    sleep_enable();                       //Enabling sleep mode
+    attachInterrupt(0, wakeUp, LOW);      //attaching a interrupt to pin d2
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN);  //Setting the sleep mode, in our case full sleep
+    digitalWrite(LED_BUILTIN, LOW);       //turning LED off
+    time_t t;                             // creates temp time variable
+    t = RTC.get();                        //gets current time from rtc
     Serial.println("Sleep  Time: " + String(hour(t)) + ":" + String(minute(t)) + ":" + String(second(t))); //prints time stamp on serial monitor
-    delay(1000); //wait a second to allow the led to be turned off before going to sleep
-    sleep_cpu();//activating sleep mode
-    Serial.println("just woke up!");//next line of code executed after the interrupt
-    digitalWrite(LED_BUILTIN, HIGH); //turning LED on
+    delay(1000);                          //wait a second to allow the led to be turned off before going to sleep
+    sleep_cpu();                          //activating sleep mode
+    Serial.println("just woke up!");      //next line of code executed after the interrupt
+    digitalWrite(LED_BUILTIN, HIGH);      //turning LED on
   
     t = RTC.get();
     Serial.println("WakeUp Time: " + String(hour(t)) + ":" + String(minute(t)) + ":" + String(second(t))); //Prints time stamp
   
     //Set New Alarm
     RTC.setAlarm(ALM1_MATCH_MINUTES , 0, minute(t) + sleep_for_mins, 0, 0);
-    // clear the alarm flag
-    RTC.alarm(ALARM_1);
+    RTC.alarm(ALARM_1);                   // clear the alarm flag
 }
 
 void wakeUp() {
-    Serial.println("Interrrupt Fired");//Print message to serial monitor
-    sleep_disable();//Disable sleep mode
-    detachInterrupt(0); //Removes the interrupt from pin 2;
+    Serial.println("Interrrupt Fired");   //Print message to serial monitor
+    sleep_disable();                      //Disable sleep mode
+    detachInterrupt(0);                   //Removes the interrupt from pin 2;
 }
 
 void setPumping (boolean onOff){
@@ -190,6 +188,6 @@ boolean aMinuteSinceLastReading (){
     }
 }
 
-unsigned int readPressure(){ // Pressure Sensor on A0
+unsigned int readPressure(){              // Pressure Sensor on A0
     return analogRead (A0);
 }

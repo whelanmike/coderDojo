@@ -58,7 +58,7 @@ void setup()
     
     time_t t;                             //create a temporary time variable so we can set the time and read the time from the RTC
     t = RTC.get();                        //Gets the current time of the RTC
-    RTC.setAlarm(ALM1_MATCH_MINUTES , 0, minute(t) + sleep_for_mins, 0, 0); // Setting alarm 1 to go off 5 minutes from now
+    RTC.setAlarm(ALM1_MATCH_MINUTES , 0, (minute(t) + sleep_for_mins) % 60, 0, 0); // Setting alarm 1 to go off X minutes from now. (Denis Barrett Fix!! using MOD)
     RTC.alarm(ALARM_1);                   // clear the alarm flag
     RTC.alarmInterrupt(ALARM_1, true);    // enable interrupt output for Alarm 1
 }
@@ -155,7 +155,7 @@ void Going_To_Sleep() {
     Serial.println("WakeUp Time: " + String(hour(t)) + ":" + String(minute(t)) + ":" + String(second(t))); //Prints time stamp
   
     //Set New Alarm
-    RTC.setAlarm(ALM1_MATCH_MINUTES , 0, minute(t) + sleep_for_mins, 0, 0);
+    RTC.setAlarm(ALM1_MATCH_MINUTES , 0, (minute(t) + sleep_for_mins) % 60, 0, 0);
     RTC.alarm(ALARM_1);                   // clear the alarm flag
 }
 

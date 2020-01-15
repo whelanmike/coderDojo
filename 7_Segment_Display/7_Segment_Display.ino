@@ -6,7 +6,7 @@
 
 TM1637 tm(CLK, DIO);
 
-int brightness = 3;
+int brightness = 5;
 
 void setup()
 {
@@ -20,10 +20,6 @@ void loop()
         tm.dispNumber(i);
         delay(500);
         tm.setBrightness(brightness);
-        brightness +=1;
-        if (brightness >5){
-          brightness =0;
-    }
   }
 }
 

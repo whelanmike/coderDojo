@@ -21,11 +21,13 @@ void setup()
     topVal=analogRead(topSensor);    // read top photodiode
 
     if (topVal   < 300) {           // if it goes dark-ish this means something has passed in front of it
+        Serial.println("topVal dark");
         Serial.println(topVal);
         startTrigger = 1;
     }
     
     if (topVal > 800 && startTrigger == 1) {   // if it gets bright AFTER being dark, the object has fallen past the sensor.
+        Serial.println("topVal starting");
         Serial.println(topVal);
         startTrigger = 0;
         startMillis = millis();             // start the timer.

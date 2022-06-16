@@ -24,7 +24,7 @@ unsigned long      lastCheckTime      = 0 ;
 unsigned int       sleepTimeSeconds   = 30; //* 60; //15;
 unsigned int       currentPressure    = 0;
 float              voltage            = 0.0;
-const float        voltageScaling     = 3.213 * 5;   // Voltage divider scaling. 3 x 1M-ohm resistors in divider. Times 5V (max input voltage for arduino ADC).
+const float        voltageScaling     = 0.01873835614;   // Measured.
 const float        lowVoltageThreshold = 11.0;
 unsigned int       previousPressure   = 0;
 const unsigned int pressureLow        = 230;
@@ -38,7 +38,7 @@ DS3232RTC RTC;
 void setup()
 {
 //    Wire.begin();   // REM
-    Serial.begin(19200);        // Starts serial communication in 9600 baud rate.
+    Serial.begin(57600);        // Starts serial communication in 9600 baud rate.
     RTC.begin();
     detachInterrupt(0);    
     setSyncProvider(RTC.get);  // Library function to get the time from the RTC module.
@@ -111,6 +111,7 @@ void loop()
         logString += "|" + String(temperature_char) +"|";
         logString += String (currentPressure) + "|";
         logString += String (voltage) + "|";
+        // Serial.println(logString);
         logFile = SD.open(charFileName, FILE_WRITE);   // This has to be a character array.
         if ( logFile ) {
           logFile.println (logString);
@@ -120,7 +121,7 @@ void loop()
           Serial.println("error opening file :- " + String(charFileName));
         }
 
-        if (currentPressure < pressureLow && voltage > lowVoltageThreshold){
+        if (currentPressure < pressureLow && voltage > lowVoltageThreshold){   // && voltage > lowVoltageThreshold HERE!!!
             Serial.println ("LOW Pressure. Set isPumping ON ");
             setPumping (true);
             }
@@ -134,7 +135,7 @@ void loop()
     else{
         updateTime();
         // Serial.println("isPumping   -------<YES>");
-        if (aMinuteSinceLastReading){
+        if (aMinuteSinceLastReading()){
             currentPressure = readPressure(); 
             voltage = readSupplyVoltage();
             temperature_float = RTC.temperature() / 4.0;
@@ -145,6 +146,7 @@ void loop()
             logString += "|" + String(temperature_char) +"|";
             logString += String (currentPressure) + "|";
             logString += String (voltage) + "|";
+            // Serial.println(logString); 
             logFile = SD.open(charFileName, FILE_WRITE);   // This has to be a character array.
             if ( logFile ) {
               logFile.println (logString);
@@ -154,7 +156,7 @@ void loop()
               Serial.println("error opening file :- " + String(charFileName));
             }
 
-            if (currentPressure > pressureHigh || voltage <= lowVoltageThreshold){
+            if (currentPressure > pressureHigh || voltage <= lowVoltageThreshold){  // || voltage <= lowVoltageThreshold  HERE!!!
                 Serial.println ("HIGH Pressure or Low Voltage. Set isPumping OFF ");
                 setPumping (false);
             }
@@ -167,12 +169,12 @@ void loop()
                     previousPressure = currentPressure;
                 }
             }
+        lastCheckTime = millis();
         }
         else{                             // if a reading has been taken recently, do nothing.
             NOP;
         }
     delay(500);
-    lastCheckTime = millis();
     }
     // Serial.println("End of main() loop,");
     // previousPressure = currentPressure;
@@ -251,7 +253,7 @@ void setPumping (boolean onOff){
 boolean aMinuteSinceLastReading (){
     long rightnow = millis();
     if (rightnow > (lastCheckTime + (repeatCheckMinutes * 60UL * 1000))){ // min ->sec -> millis
-        return true;
+      return true;
     }
     else{
         return false;
@@ -268,7 +270,7 @@ unsigned int readPressure(){              // Pressure Sensor on A0
 
 float readSupplyVoltage(){              // Voltage divider output connected to A2
     delay(100);
-    return ( (float) analogRead (A2) * voltageScaling / 1024.0 );
+    return ( (float) analogRead (A2) * voltageScaling );
 }
 
 // Convert binary coded decimal to normal decimal numbers

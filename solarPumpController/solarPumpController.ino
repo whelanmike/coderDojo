@@ -10,7 +10,7 @@
 
 const unsigned int sd_chipSelect      = 6;
 char               charFileName[16]   = "";
-String             logString          ;
+String             logString;
 File               logFile;
 float              temperature_float  = 0.0;
 char               temperature_char[10];
@@ -23,12 +23,13 @@ unsigned long      currentTime        = 0;
 unsigned long      lastCheckTime      = 0 ;
 unsigned int       sleepTimeSeconds   = 30; //* 60; //15;
 unsigned int       currentPressure    = 0;
+float              voltage            = 0.0;
+const float        voltageScaling     = 3.213 * 5;   // Voltage divider scaling. 3 x 1M-ohm resistors in divider. Times 5V (max input voltage for arduino ADC).
+const float        lowVoltageThreshold = 11.0;
 unsigned int       previousPressure   = 0;
 const unsigned int pressureLow        = 230;
 const unsigned int pressureHigh       = 350;
 const unsigned int pressureDelta      = 0;  // Indicates that tank is filling.
-unsigned int       batteryVoltage;
-unsigned int       panelVoltage;
 const unsigned int relayPin           = 8; //D8 pin -- connected to relay.
 time_t t;
 
@@ -98,30 +99,28 @@ void loop()
     if (! isPumping){
         // Serial.println("isPumping   -------<NO>");
         updateTime();
-        // Serial.println (String(Year) + "--" +String(Month) +"--" + String(Day) +"--" + String(Hour) +"--" + String(Minute) +"--" + String(Second));
         sprintf (charFileName, "%04d%02d%02d.log", Year, Month, Day);
-        // Serial.print (String (charFileName)); Serial.println( "                   | file name |     ");
+
         temperature_float = RTC.temperature() / 4.0;
-        // Serial.println ("Current Temperature : " + String(temperature_float));
         dtostrf (temperature_float, 4, 2, temperature_char);  // https://stackoverflow.com/questions/27651012/arduino-sprintf-float-not-formatting
         currentPressure = readPressure();
+        voltage = readSupplyVoltage();        
         Serial.print("Current Pressure NOT Pumping :: "); Serial.println(currentPressure);
-        // Simulate Logging to SD Card
+
         logString = (displayTime());
-        // Serial.println ("Current Time : " + logString);
         logString += "|" + String(temperature_char) +"|";
         logString += String (currentPressure) + "|";
+        logString += String (voltage) + "|";
         logFile = SD.open(charFileName, FILE_WRITE);   // This has to be a character array.
         if ( logFile ) {
           logFile.println (logString);
-          // Serial.print("SD Card write Simulation.   "); Serial.print (logString); Serial.println (" | log data  | ");
           logFile.close();
         }
         else {                            // if the file isn't open, pop up an error:
           Serial.println("error opening file :- " + String(charFileName));
         }
 
-        if (currentPressure < pressureLow){
+        if (currentPressure < pressureLow && voltage > lowVoltageThreshold){
             Serial.println ("LOW Pressure. Set isPumping ON ");
             setPumping (true);
             }
@@ -137,10 +136,26 @@ void loop()
         // Serial.println("isPumping   -------<YES>");
         if (aMinuteSinceLastReading){
             currentPressure = readPressure(); 
-            Serial.println(currentPressure);
-            // Serial.print("Current Pressure during Pumping :: "); Serial.println(currentPressure);
-            if (currentPressure > pressureHigh){
-                Serial.println ("HIGH Pressure. Tank full. Set isPumping OFF ");
+            voltage = readSupplyVoltage();
+            temperature_float = RTC.temperature() / 4.0;
+            dtostrf (temperature_float, 4, 2, temperature_char);  // https://stackoverflow.com/questions/27651012/arduino-sprintf-float-not-formatting
+            sprintf (charFileName, "%04d%02d%02d.log", Year, Month, Day);
+
+            logString = (displayTime());
+            logString += "|" + String(temperature_char) +"|";
+            logString += String (currentPressure) + "|";
+            logString += String (voltage) + "|";
+            logFile = SD.open(charFileName, FILE_WRITE);   // This has to be a character array.
+            if ( logFile ) {
+              logFile.println (logString);
+              logFile.close();
+            }
+            else {                            // if the file isn't open, pop up an error:
+              Serial.println("error opening file :- " + String(charFileName));
+            }
+
+            if (currentPressure > pressureHigh || voltage <= lowVoltageThreshold){
+                Serial.println ("HIGH Pressure or Low Voltage. Set isPumping OFF ");
                 setPumping (false);
             }
             else{
@@ -251,14 +266,11 @@ unsigned int readPressure(){              // Pressure Sensor on A0
     return analogRead (A0);
 }
 
-/* ============================= */
-/*
-byte decToBcd(byte val)
-{
-  return ( (val/10*16) + (val%10) );
+float readSupplyVoltage(){              // Voltage divider output connected to A2
+    delay(100);
+    return ( (float) analogRead (A2) * voltageScaling / 1024.0 );
 }
 
-*/
 // Convert binary coded decimal to normal decimal numbers
 byte bcdToDec(byte val)
 {
@@ -281,45 +293,6 @@ byte *dayOfMonth)
   *hour       = bcdToDec(Wire.read() & 0x3f);
   *dayOfMonth = bcdToDec(Wire.read()) ;
 }
-/*
-void readDS3232alarm2(
-byte *minute, 
-byte *hour, 
-byte *dayOfMonth)
-{
-  Wire.beginTransmission(DS3232_I2C_ADDRESS);
-  Wire.write(0x0B); // set DS3232 register pointer to 07h
-  Wire.endTransmission();  
-  Wire.requestFrom(DS3232_I2C_ADDRESS, 3); // request 4 bytes of data from DS3232 starting from register 07h
-
-  *minute     = bcdToDec(Wire.read());
-  *hour       = bcdToDec(Wire.read() & 0x3f);
-  *dayOfMonth = bcdToDec(Wire.read()) ;
-}
-
-void setDS3232alarm1(byte second, byte minute, byte hour, byte dayOfMonth)
-// sets alarm 1 data
-{
-  Wire.beginTransmission(DS3232_I2C_ADDRESS);  
-  Wire.write(0x07); 
-  Wire.write(decToBcd(second));     // set seconds
-  Wire.write(decToBcd(minute));     // set minutes
-  Wire.write(decToBcd(hour));       // set hours
-  Wire.write(decToBcd(dayOfMonth));  // set date of month
-  Wire.endTransmission();
-}
-
-void setDS3232alarm2(byte minute, byte hour, byte dayOfMonth)
-// sets alarm 1 data
-{
-  Wire.beginTransmission(DS3232_I2C_ADDRESS);  
-  Wire.write(0x0B); 
-  Wire.write(decToBcd(minute));     // set minutes
-  Wire.write(decToBcd(hour));       // set hours
-  Wire.write(decToBcd(dayOfMonth));  // set date of month
-  Wire.endTransmission();
-}
-*/
 
 void displayAlarm1(){
   byte second, minute, hour, dayOfMonth;
@@ -345,24 +318,3 @@ void displayAlarm1(){
   Serial.print(" == ");
   Serial.println(dayOfMonth);
 }
-/*
-void displayAlarm2()
-{
-  byte minute, hour, dayOfMonth;
-  
-  // retrieve data from DS3232  
-  readDS3232alarm2(&minute, &hour, &dayOfMonth);
-  
-  // send it to the serial monitor
-  Serial.print("Alarm Two ");
-  Serial.print(hour, DEC);// convert the byte variable to a decimal number when being displayed
-  Serial.print(":");
-  if (minute<10)
-  {
-      Serial.print("0");
-  }
-  Serial.print(minute, DEC);
-  Serial.print("  ");
-  Serial.println(dayOfMonth, DEC);
-}
-*/

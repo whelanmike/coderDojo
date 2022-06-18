@@ -8,29 +8,29 @@
 #define interruptPin 2 //Pin we are going to use to wake up the Arduino  interrupt pin (D2)
 #define NOP __asm__("nop\n\t")
 
-const unsigned int sd_chipSelect      = 6;
-char               charFileName[16]   = "";
+const unsigned int sd_chipSelect       = 6;
+char               charFileName[16]    = "";
 String             logString;
 File               logFile;
-float              temperature_float  = 0.0;
+float              temperature_float   = 0.0;
 char               temperature_char[10];
 String             logTime;
-const byte         sleep_for_mins     = 1; // Sets the wake up intervall in minutes
+const byte         sleep_for_mins      = 1; // Sets the wake up intervall in minutes
 unsigned int       Year, Month, Day, Hour, Minute, Second;  // Function to update these values.
-boolean            isPumping          = false;
-const unsigned int repeatCheckMinutes = 1;
-unsigned long      currentTime        = 0;
-unsigned long      lastCheckTime      = 0 ;
-unsigned int       sleepTimeSeconds   = 30; //* 60; //15;
-unsigned int       currentPressure    = 0;
-float              voltage            = 0.0;
-const float        voltageScaling     = 0.01873835614;   // Measured.
+boolean            isPumping           = false;
+const unsigned int repeatCheckMinutes  = 1;
+unsigned long      currentTime         = 0;
+unsigned long      lastCheckTime       = 0 ;
+unsigned int       sleepTimeSeconds    = 30; //* 60; //15;
+unsigned int       currentPressure     = 0;
+float              voltage             = 0.0;
+const float        voltageScaling      = 0.01521679441;   // Measured.
 const float        lowVoltageThreshold = 11.0;
-unsigned int       previousPressure   = 0;
-const unsigned int pressureLow        = 230;
-const unsigned int pressureHigh       = 350;
-const unsigned int pressureDelta      = 0;  // Indicates that tank is filling.
-const unsigned int relayPin           = 8; //D8 pin -- connected to relay.
+unsigned int       previousPressure    = 0;
+const unsigned int pressureLow         = 230;
+const unsigned int pressureHigh        = 350;
+const unsigned int pressureDelta       = 0;  // Indicates that tank is filling.
+const unsigned int relayPin            = 8; //D8 pin -- connected to relay.
 time_t t;
 
 DS3232RTC RTC;
@@ -264,11 +264,13 @@ unsigned int readPressure(){              // Pressure Sensor on A0
     if (second(t) % 5 ==0 ){              // This is just for debugging REMOVE in PROD
     Serial.println("Read Pressure function()"); 
     }
+    analogRead (A0);
     delay(100);
     return analogRead (A0);
 }
 
 float readSupplyVoltage(){              // Voltage divider output connected to A2
+    analogRead (A2);   // Does taking 2 readings give better results? TEST
     delay(100);
     return ( (float) analogRead (A2) * voltageScaling );
 }

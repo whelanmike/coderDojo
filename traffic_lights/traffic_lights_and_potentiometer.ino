@@ -1,12 +1,12 @@
 // Traffic lights sample
-int GREEN = 2;        // Wire Pin 2 to Green LED
-int YELLOW = 3;       // Pin 3 to Yellow LED
-int RED = 4;          // Pin 4 to Red LED
+const int GREEN = 2;        // Wire Pin 2 to Green LED
+const int YELLOW = 3;       // Pin 3 to Yellow LED
+const int RED = 4;          // Pin 4 to Red LED
 // --------- Potentiometer : voltage measurement 
-int analoguePin = 0;  // Wire Pin A0 to Middle pin of Potentiometer.  (0 => analogue pin 0)
+const int analoguePin = 0;  // Wire Pin A0 to Middle pin of Potentiometer.  (0 => analogue pin 0)
 int voltageVal = 0;   // The value read by A0 (0 -> 1,023). Note this is an Integer.
 float voltage = 0.0 ; // Variable to hold calculated Voltage value. This will be a floating point number.
-
+int delay_milliseconds = 1000;
 
 void setup() {  // put your setup code here, to run once:
  pinMode(GREEN, OUTPUT);         // All LEDs are output.  We send power out to turn them on.
@@ -16,12 +16,18 @@ void setup() {  // put your setup code here, to run once:
 }
 
 void loop() { // put your main code here, to run repeatedly:
-  voltageVal = analogRead(analoguePin);  // read the input pin
-  Serial.println(voltageVal);          // debug value
-  delay (2000);            // Sleep for 2 seconds
+  digitalWrite(GREEN, LOW);
+  digitalWrite(YELLOW, LOW);
+  digitalWrite(RED, LOW);
+  voltageVal = analogRead(analoguePin); // read the input pin
+  Serial.println(voltageVal);           // debug value
+  delay (delay_milliseconds);           // Sleep for a bit
   
   // -- if statement in C++
-  if (voltageVal < 300){
+  if (voltageVal < 100){
+    Serial.println("Less Than : 100");
+  }
+  else if (voltageVal < 300){
       Serial.println("Less Than : 300");
       digitalWrite(GREEN, HIGH);
       digitalWrite(YELLOW, LOW);
@@ -44,8 +50,17 @@ void loop() { // put your main code here, to run repeatedly:
       digitalWrite(GREEN, HIGH);
       digitalWrite(YELLOW, HIGH);
       digitalWrite(RED, HIGH);
+      delay_milliseconds = 500;
       }
+  if (voltageVal > 930){
+    delay_milliseconds = (1050 - voltageVal) * 3;
+  }
+  delay (delay_milliseconds);
+  delay_milliseconds = 1000;
  }
  
 
+void lightsOnOff(){
+  
+}
 

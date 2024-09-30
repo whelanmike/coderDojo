@@ -22,14 +22,14 @@ To DROP MACRO <br>
 `drop macro table get_csv_file_schema;`
 
 
-### **Sample execution & output**
+### **Sample execution**
 
 ```sql
 set file_search_path = 'C:\downloads';
 
 select definition from generate_table_from_csv('test_result_2022.csv');
 ```
-
+### **Output**
 ```sql
 --create table schema_name.test_result_2022 as  -- **** RENAME AS REQUIRED ****                                                  
     select                                                                                                                       

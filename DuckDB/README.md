@@ -17,10 +17,6 @@
     - ignore errors (use store_rejects option instead for DQ)
     - formatting options, e.g. date & time
 
-### **Note**
-To DROP MACRO <br>
-`drop macro table get_csv_file_schema;`
-
 
 ### **Sample execution**
 
@@ -80,3 +76,7 @@ select definition from generate_table_from_csv('test_result_2022.csv');
 ```sql
 select * from reject_errors;
 ```
+
+### **Note**
+To DROP MACRO <br>
+`drop macro table get_csv_file_schema;`

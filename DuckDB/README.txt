@@ -1,9 +1,9 @@
 Usage:
 - Requires DuckDB v1.1 or later
 - Set file path to csv location e.g.
-    set file_search_path = 'C:\Users\user_name\Downloads\';
+    `set file_search_path = 'C:\Users\user_name\Downloads\';`
 - Generate DDL for table from csv file, e.g.
-    select definition from generate_table_from_csv('some_interesting_file.csv');
+    `select definition from generate_table_from_csv('some_interesting_file.csv');`
 
 - Copy the generated sql into a new editor window.
 - Review/amend the following before executing

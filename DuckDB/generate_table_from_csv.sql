@@ -37,6 +37,8 @@ create or replace macro generate_table_from_csv(csv_file_name) as table
     select '            ,store_rejects = True' || '  -- select * FROM reject_errors;'
     union all
     select '            --,ignore_errors=True' || '  -- Mutually Exclusive with store_rejects option.'
+    union all 
+    select '            --,nullstr=''NA'''  || '  -- Use to convert string to null e.g. N\A, NA, etc.'    
     union all
     select '            ,columns = '
     union all

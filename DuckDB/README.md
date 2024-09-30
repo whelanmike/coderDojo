@@ -75,3 +75,8 @@ select definition from generate_table_from_csv('test_result_2022.csv');
         )                                                                                                                        
     ;
 ```
+### Check for rejected data.
+
+```sql
+select * from reject_errors;
+```

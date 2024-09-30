@@ -1,5 +1,5 @@
 **Usage:**
-<br>(Requires DuckDB v1.1 or later)
+<br>(Requires [DuckDB v1.1](https://duckdb.org/2024/09/09/announcing-duckdb-110.html) or later)
 1. Set file path to csv location e.g. <br>
     `set file_search_path = 'C:\Users\user_name\Downloads\';`
 1. Run create macro script (`generate_table_from_csv.sql`).
